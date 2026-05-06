@@ -1,0 +1,8 @@
+C:\Users\admin\Desktop\Projects\GDProject\obj\Debug\net10.0\AmlDetectionApi.csproj.AssemblyReference.cache
+C:\Users\admin\Desktop\Projects\GDProject\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\Users\admin\Desktop\Projects\GDProject\obj\Debug\net10.0\AmlDetectionApi.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\admin\Desktop\Projects\GDProject\obj\Debug\net10.0\AmlDetectionApi.AssemblyInfoInputs.cache
+C:\Users\admin\Desktop\Projects\GDProject\obj\Debug\net10.0\AmlDetectionApi.AssemblyInfo.cs
+C:\Users\admin\Desktop\Projects\GDProject\obj\Debug\net10.0\AmlDetectionApi.csproj.CoreCompileInputs.cache
+C:\Users\admin\Desktop\Projects\GDProject\obj\Debug\net10.0\AmlDetectionApi.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\admin\Desktop\Projects\GDProject\obj\Debug\net10.0\AmlDetectionApi.MvcApplicationPartsAssemblyInfo.cache

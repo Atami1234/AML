@@ -1,0 +1,54 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\admin\\Desktop\\Projects\\GDProject\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2CF3BA56-66DF-CA2E-1B9B-37F17350EF06}|AmlDetectionApi.csproj|c:\\users\\admin\\desktop\\projects\\gdproject\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2CF3BA56-66DF-CA2E-1B9B-37F17350EF06}|AmlDetectionApi.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2CF3BA56-66DF-CA2E-1B9B-37F17350EF06}|AmlDetectionApi.csproj|c:\\users\\admin\\desktop\\projects\\gdproject\\aml-dashboard\\src\\app\\services\\api.service.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{2CF3BA56-66DF-CA2E-1B9B-37F17350EF06}|AmlDetectionApi.csproj|solutionrelative:aml-dashboard\\src\\app\\services\\api.service.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "api.service.ts",
+              "DocumentMoniker": "C:\\Users\\admin\\Desktop\\Projects\\GDProject\\aml-dashboard\\src\\app\\services\\api.service.ts",
+              "RelativeDocumentMoniker": "aml-dashboard\\src\\app\\services\\api.service.ts",
+              "ToolTip": "C:\\Users\\admin\\Desktop\\Projects\\GDProject\\aml-dashboard\\src\\app\\services\\api.service.ts",
+              "RelativeToolTip": "aml-dashboard\\src\\app\\services\\api.service.ts",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2026-05-06T11:46:21.246Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\admin\\Desktop\\Projects\\GDProject\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\admin\\Desktop\\Projects\\GDProject\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAACoAAAAAAAAAAAAqwDkAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-06T11:38:27.391Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
