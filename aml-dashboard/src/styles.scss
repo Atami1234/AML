@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+// ── Color System & Variables ──────────────────────────────
+:root {
+  --primary: #1e3a5f;
+  --primary-dark: #152c47;
+  --accent: #3b82f6;
+  --accent-light: #eff6ff;
+  
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-muted: #f1f5f9;
+  
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-extra-muted: #94a3b8;
+  
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --border-active: rgba(59, 130, 246, 0.2);
+  
+  --risk-high: #dc2626;
+  --risk-medium: #ea580c;
+  --risk-low: #16a34a;
+  
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02);
+  --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.02);
+  
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
+// ── Reset & Core ──────────────────────────────────────────
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--background);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ── Typography ────────────────────────────────────────────
+.mono {
+  font-family: 'JetBrains Mono', monospace !important;
+  letter-spacing: -0.02em;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+// ── Layout Utilities ──────────────────────────────────────
+.page-container {
+  padding: 40px;
+  max-width: 1600px;
+  margin: 0 auto;
+  animation: pageEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.section-header {
+  margin-bottom: 32px;
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 8px;
+    display: block;
+  }
+}
+
+// ── Components ────────────────────────────────────────────
+.glass-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
+  padding: 24px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-active);
+  }
+}
+
+.table-wrapper {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th {
+    background: var(--surface-muted);
+    padding: 16px 24px;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  
+  td {
+    padding: 18px 24px;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-main);
+  }
+  
+  tbody tr {
+    transition: background 0.15s ease;
+    &:hover { background: var(--accent-light); }
+    &:last-child td { border-bottom: none; }
+  }
+}
+
+// ── Buttons ───────────────────────────────────────────────
+.btn {
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  
+  &-primary {
+    background: var(--primary);
+    color: white;
+    &:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30, 58, 95, 0.2); }
+  }
+  
+  &-outline {
+    background: transparent;
+    border-color: #cbd5e1;
+    color: var(--text-muted);
+    &:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  }
+}
+
+// ── Animations ────────────────────────────────────────────
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes staggeredFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-1 { animation: staggeredFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+.stagger-2 { animation: staggeredFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
+.stagger-3 { animation: staggeredFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }
+.stagger-4 { animation: staggeredFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both; }

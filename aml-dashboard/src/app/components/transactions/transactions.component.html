@@ -1,0 +1,79 @@
+<div class="page-container transactions-page">
+  <header class="section-header">
+    <div class="header-main">
+      <span class="eyebrow">Financial Activity Audit</span>
+      <h1>Global Ledger</h1>
+    </div>
+  </header>
+
+  <div *ngIf="error" class="alert-banner error stagger-1">
+    {{ error }}
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Retriving ledger segments...</p>
+  </div>
+
+  <div *ngIf="!loading && transactions.length === 0" class="empty-state glass-card stagger-1">
+    <span class="icon">📁</span>
+    <h3>Ledger is Empty</h3>
+    <p>No transactions have been recorded in the system yet.</p>
+  </div>
+
+  <div *ngIf="!loading && transactions.length > 0" class="table-wrapper stagger-2">
+    <table>
+      <thead>
+        <tr>
+          <th>Transaction ID</th>
+          <th>Flow Direction</th>
+          <th>Quantum</th>
+          <th>Protocol</th>
+          <th>Timestamp</th>
+          <th>Forensics</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tx of transactions">
+          <td class="mono" style="color: var(--text-muted);">#{{ tx.transactionId }}</td>
+          <td>
+            <div class="flow-cell">
+              <span class="acc mono">{{ tx.fromAccountId }}</span>
+              <span class="arrow">→</span>
+              <span class="acc mono">{{ tx.toAccountId }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="amount-cell">
+              <span class="val mono">{{ tx.amount | number:'1.2-2' }}</span>
+              <span class="cur">{{ tx.currency }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="protocol-badge" [ngClass]="'p-' + tx.channel.toLowerCase()">
+              {{ tx.channel }}
+            </span>
+          </td>
+          <td class="mono" style="font-size: 0.8rem; color: var(--text-muted);">
+            {{ tx.transactionDate | date:'yyyy-MM-dd HH:mm' }}
+          </td>
+          <td>
+            <button class="btn-map" [routerLink]="['/network']" [queryParams]="{accountId: tx.fromAccountId}">
+              🕸️ Map
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-footer stagger-3" *ngIf="totalPages > 1 && !loading">
+    <div class="page-info">
+      Segment <strong>{{ page }}</strong> of <strong>{{ totalPages }}</strong>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline" (click)="prevPage()" [disabled]="page === 1">Back</button>
+      <button class="btn btn-outline" (click)="nextPage()" [disabled]="page === totalPages">Forward</button>
+    </div>
+  </div>
+</div>

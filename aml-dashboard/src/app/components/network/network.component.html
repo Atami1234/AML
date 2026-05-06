@@ -1,0 +1,182 @@
+<div class="network-page">
+
+  <!-- ── Full-Screen Canvas ───────────────────────────── -->
+  <div class="canvas-wrap">
+    <div id="network-graph" class="vis-canvas"></div>
+
+    <!-- Loading / Stabilizing overlays -->
+    <div class="canvas-overlay loading-overlay" *ngIf="loading">
+      <div class="loader-ring"></div>
+      <div class="loader-text">
+        <span class="loader-title">Loading Transaction Network</span>
+        <span class="loader-sub">Fetching all records...</span>
+      </div>
+    </div>
+
+    <div class="canvas-overlay stabilizing-overlay" *ngIf="!loading && stabilizing">
+      <div class="stab-bar-wrap">
+        <div class="stab-label">⚡ Calculating optimal layout...</div>
+        <div class="stab-bar"><div class="stab-fill"></div></div>
+      </div>
+    </div>
+
+    <div class="canvas-overlay error-overlay" *ngIf="error">
+      <div class="error-box">
+        <span class="error-icon">⚠</span>
+        <span>{{ error }}</span>
+        <button class="btn btn-blue btn-sm" (click)="loadFullNetwork()">Retry</button>
+      </div>
+    </div>
+
+    <!-- Floating Header Bar -->
+    <div class="graph-header" *ngIf="!loading">
+      <div class="header-brand">
+        <span class="hb-icon">🕸</span>
+        <span class="hb-title">Transaction Network</span>
+        <span class="hb-sep">—</span>
+        <span class="hb-count">{{ nodesCount }} accounts · {{ edgesCount }} flows</span>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" (click)="fitGraph()" title="Fit to screen">⊹</button>
+        <button class="icon-btn" (click)="togglePhysics()" title="{{ physicsEnabled ? 'Freeze' : 'Animate' }}">
+          {{ physicsEnabled ? '❄' : '▶' }}
+        </button>
+        <button class="icon-btn" (click)="loadFullNetwork()" title="Reload">↺</button>
+      </div>
+    </div>
+
+    <!-- Stats Chips (top-right) -->
+    <div class="stats-chips" *ngIf="!loading && !stabilizing">
+      <div class="s-chip red">
+        <span class="s-dot" style="background:#dc2626"></span>
+        High Hub
+      </div>
+      <div class="s-chip orange">
+        <span class="s-dot" style="background:#ea580c"></span>
+        Medium
+      </div>
+      <div class="s-chip blue">
+        <span class="s-dot" style="background:#2563ab"></span>
+        Active
+      </div>
+      <div class="s-chip gray">
+        <span class="s-dot" style="background:#475569"></span>
+        Peripheral
+      </div>
+    </div>
+
+    <!-- Legend (bottom-left) -->
+    <div class="graph-legend" *ngIf="!loading && !stabilizing">
+      <div class="legend-row">
+        <span class="l-line orange"></span>
+        High-value flow
+      </div>
+      <div class="legend-row">
+        <span class="l-line blue"></span>
+        Normal flow
+      </div>
+      <div class="legend-row">
+        <span class="l-size big"></span>
+        High connectivity
+      </div>
+      <div class="legend-row">
+        <span class="l-size small"></span>
+        Low connectivity
+      </div>
+    </div>
+
+    <!-- Click-hint -->
+    <div class="click-hint" *ngIf="!loading && !stabilizing && !selectedNode">
+      Click any node to inspect
+    </div>
+
+  </div>
+
+  <!-- ── Slide-in Inspector Panel ─────────────────────── -->
+  <div class="inspector-panel" [class.open]="!!selectedNode">
+    <div *ngIf="selectedNode">
+
+      <!-- Panel Header -->
+      <div class="insp-header">
+        <div class="insp-dot" [style.background]="tierColor"
+             [style.box-shadow]="'0 0 16px ' + tierColor"></div>
+        <div class="insp-title-group">
+          <div class="insp-account">Account #{{ selectedNode.id }}</div>
+          <span class="insp-badge" [ngClass]="tierBadgeClass">{{ selectedNode._tier }}</span>
+        </div>
+        <button class="close-btn" (click)="closePanel()">✕</button>
+      </div>
+
+      <!-- Metrics cards -->
+      <div class="insp-metrics">
+        <div class="m-block">
+          <div class="m-num">{{ selectedNode._degree }}</div>
+          <div class="m-lbl">Connections</div>
+        </div>
+        <div class="m-block outgoing-block" *ngIf="selectedMetrics">
+          <div class="m-num">{{ selectedMetrics.outgoingCount }}</div>
+          <div class="m-lbl">Outgoing</div>
+        </div>
+        <div class="m-block incoming-block" *ngIf="selectedMetrics">
+          <div class="m-num">{{ selectedMetrics.incomingCount }}</div>
+          <div class="m-lbl">Incoming</div>
+        </div>
+      </div>
+
+      <!-- Volume -->
+      <div class="insp-section" *ngIf="selectedNode._volume > 0">
+        <div class="sect-label">Outgoing Volume</div>
+        <div class="vol-val">SAR {{ selectedNode._volume | number:'1.0-0' }}</div>
+      </div>
+
+      <!-- Pattern Alerts -->
+      <div class="pattern-alerts" *ngIf="selectedMetrics">
+        <div class="pattern-alert danger" *ngIf="selectedMetrics.isFunnelAccount">
+          ⚠ FUNNEL ACCOUNT — Concentrated inflows
+        </div>
+        <div class="pattern-alert danger" *ngIf="selectedMetrics.isCircularPatternDetected">
+          🔄 CIRCULAR PATTERN — Potential layering
+        </div>
+        <div class="pattern-alert ok" *ngIf="!selectedMetrics.isFunnelAccount && !selectedMetrics.isCircularPatternDetected">
+          ✓ No suspicious patterns detected
+        </div>
+      </div>
+
+      <div class="insp-loading" *ngIf="metricsLoading">
+        <div class="spinner" style="width:22px;height:22px;border-width:2px"></div>
+        <span>Analysing account...</span>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="insp-section" *ngIf="!metricsLoading">
+        <div class="sect-label">Recent Outgoing</div>
+        <div class="tx-list">
+          <div *ngFor="let tx of getNodeTransactions(selectedNode.id).outgoing" class="tx-row outgoing">
+            <span class="tx-arrow">↑</span>
+            <span class="tx-to">→ #{{ tx.toAccountId }}</span>
+            <span class="tx-amt">{{ tx.amount | number:'1.0-0' }}</span>
+          </div>
+          <div *ngIf="getNodeTransactions(selectedNode.id).outgoing.length === 0" class="tx-empty">No outgoing found</div>
+        </div>
+
+        <div class="sect-label" style="margin-top:14px">Recent Incoming</div>
+        <div class="tx-list">
+          <div *ngFor="let tx of getNodeTransactions(selectedNode.id).incoming" class="tx-row incoming">
+            <span class="tx-arrow">↓</span>
+            <span class="tx-to">← #{{ tx.fromAccountId }}</span>
+            <span class="tx-amt">{{ tx.amount | number:'1.0-0' }}</span>
+          </div>
+          <div *ngIf="getNodeTransactions(selectedNode.id).incoming.length === 0" class="tx-empty">No incoming found</div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="insp-actions">
+        <button class="btn btn-blue btn-sm" (click)="expandNode()">🔍 Focus Node</button>
+        <button class="btn btn-outline btn-sm" (click)="closePanel()">✕ Close</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

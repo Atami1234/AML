@@ -1,0 +1,88 @@
+<div class="page-container dashboard">
+  <header class="section-header">
+    <span class="eyebrow">Analytical Intelligence Overview</span>
+    <h1>Intelligence Dashboard</h1>
+  </header>
+
+  <div class="stat-grid">
+    <div class="stat-card glass-card stagger-1">
+      <div class="card-head">
+        <div class="icon-wrap" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">💳</div>
+        <span class="trend positive">↑ 12%</span>
+      </div>
+      <div class="card-body">
+        <div class="value mono">{{ totalTransactions | number }}</div>
+        <div class="label">Total Processed Volume</div>
+      </div>
+      <div class="card-foot">
+        <div class="progress-bar"><div class="fill" style="width: 75%; background: #3b82f6;"></div></div>
+      </div>
+    </div>
+
+    <div class="stat-card glass-card stagger-2">
+      <div class="card-head">
+        <div class="icon-wrap" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">🔔</div>
+        <span class="trend negative">↓ 4%</span>
+      </div>
+      <div class="card-body">
+        <div class="value mono">{{ totalAlerts | number }}</div>
+        <div class="label">Active Risk Alerts</div>
+      </div>
+      <div class="card-foot">
+        <div class="progress-bar"><div class="fill" style="width: 45%; background: #8b5cf6;"></div></div>
+      </div>
+    </div>
+
+    <div class="stat-card glass-card stagger-3">
+      <div class="card-head">
+        <div class="icon-wrap" style="background: rgba(220, 38, 38, 0.1); color: #dc2626;">🚨</div>
+        <span class="badge badge-high">Critical</span>
+      </div>
+      <div class="card-body">
+        <div class="value mono">{{ highRiskAlerts | number }}</div>
+        <div class="label">High Severity Cases</div>
+      </div>
+      <div class="card-foot">
+        <div class="progress-bar"><div class="fill" style="width: 25%; background: #dc2626;"></div></div>
+      </div>
+    </div>
+
+    <div class="stat-card glass-card stagger-4">
+      <div class="card-head">
+        <div class="icon-wrap" style="background: rgba(234, 88, 12, 0.1); color: #ea580c;">⚡</div>
+        <span class="badge badge-medium">Action Required</span>
+      </div>
+      <div class="card-body">
+        <div class="value mono">{{ mediumRiskAlerts | number }}</div>
+        <div class="label">Medium Severity Cases</div>
+      </div>
+      <div class="card-foot">
+        <div class="progress-bar"><div class="fill" style="width: 60%; background: #ea580c;"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-content stagger-4" style="margin-top: 40px;">
+    <div class="glass-card action-deck">
+      <h3>Quick Forensic Operations</h3>
+      <div class="action-grid">
+        <button class="action-tile" routerLink="/network">
+          <span class="tile-icon">🕸️</span>
+          <span class="tile-label">Network Topology</span>
+        </button>
+        <button class="action-tile" routerLink="/alerts">
+          <span class="tile-icon">🔍</span>
+          <span class="tile-label">Investigate Alerts</span>
+        </button>
+        <button class="action-tile" routerLink="/transactions">
+          <span class="tile-icon">📜</span>
+          <span class="tile-label">Audit Ledger</span>
+        </button>
+        <button class="action-tile" routerLink="/upload">
+          <span class="tile-icon">📥</span>
+          <span class="tile-label">Batch Ingestion</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,123 @@
+<div class="page-container container">
+
+  <!-- Back + Header -->
+  <div class="page-header">
+    <button class="btn btn-outline back-btn" routerLink="/alerts">← Back to Alerts</button>
+    <div class="header-main" *ngIf="alert">
+      <span class="badge" [ngClass]="'badge-' + alert.riskLevel.toLowerCase()">{{ alert.riskLevel }}</span>
+      <h2>Case #{{ alert.alertId }} — {{ alert.accountNumber }}</h2>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">⚠ {{ error }}</div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading forensic data...</p>
+  </div>
+
+  <div *ngIf="!loading && alert" class="analysis-layout">
+
+    <!-- ── Left: Alert Profile + Reasons ── -->
+    <div class="left-col">
+
+      <!-- Summary Card -->
+      <div class="card summary-card" [ngClass]="'border-' + alert.riskLevel.toLowerCase()">
+        <div class="summary-header">
+          <h3>Risk Profile</h3>
+          <span class="score-chip" [ngClass]="alert.riskLevel.toLowerCase()">{{ alert.riskScore }}</span>
+        </div>
+        <div class="summary-grid">
+          <div class="s-item">
+            <label>Account</label>
+            <div class="s-val mono">{{ alert.accountNumber }}</div>
+          </div>
+          <div class="s-item">
+            <label>Status</label>
+            <div class="s-val">{{ alert.status }}</div>
+          </div>
+          <div class="s-item">
+            <label>Risk Category</label>
+            <div class="s-val">
+              <span class="badge" [ngClass]="'badge-' + alert.riskLevel.toLowerCase()">{{ alert.riskLevel }}</span>
+            </div>
+          </div>
+          <div class="s-item">
+            <label>Score</label>
+            <div class="s-val score-val" [ngClass]="alert.riskLevel.toLowerCase()">{{ alert.riskScore }} / 100</div>
+          </div>
+        </div>
+
+        <!-- Score bar -->
+        <div class="score-bar-wrap">
+          <div class="score-bar-track">
+            <div class="score-bar-fill" [ngClass]="alert.riskLevel.toLowerCase()" [style.width]="alert.riskScore + '%'"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reasons Timeline -->
+      <div class="card reasons-card">
+        <h3>Detection Logic</h3>
+        <div class="reason-timeline">
+          <div class="reason-item" *ngFor="let r of alert.reasons">
+            <div class="reason-dot"></div>
+            <div class="reason-line"></div>
+            <div class="reason-content">
+              <div class="reason-top">
+                <span class="rule-name">{{ r.ruleName }}</span>
+                <span class="pts-badge">+{{ r.score }} pts</span>
+              </div>
+              <p class="reason-desc">{{ r.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Right: Blockchain Audit ── -->
+    <div class="right-col">
+
+      <div class="card blockchain-card" [ngClass]="verificationResult ? (verificationResult.isValid ? 'verified-valid' : 'verified-invalid') : ''">
+        <div class="bc-header">
+          <div>
+            <div class="bc-eyebrow">Blockchain Audit</div>
+            <h3>Immutable Ledger Entry</h3>
+          </div>
+          <button class="btn btn-cyan btn-sm" (click)="verifyHash()" [disabled]="verifying">
+            {{ verifying ? '...' : 'Validate' }}
+          </button>
+        </div>
+
+        <div class="hash-block">
+          <label>Block Reference</label>
+          <code class="hash-code">{{ alert.blockReference }}</code>
+        </div>
+
+        <div class="hash-block">
+          <label>SHA-256 Fingerprint</label>
+          <code class="hash-code long">{{ alert.blockchainHash }}</code>
+        </div>
+
+        <!-- Verification Result -->
+        <div *ngIf="verificationResult" class="verification-result"
+             [ngClass]="verificationResult.isValid ? 'result-valid' : 'result-invalid'">
+          <div class="result-icon">{{ verificationResult.isValid ? '✓' : '✗' }}</div>
+          <div class="result-text">
+            <strong>{{ verificationResult.isValid ? 'Hash Integrity Verified' : 'Integrity Failure Detected' }}</strong>
+            <p>{{ verificationResult.message }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timestamp -->
+      <div class="card timestamp-card">
+        <label>Alert Triggered</label>
+        <div class="ts-val mono">{{ alert.createdAt | date:'MMMM d, y — h:mm:ss a' }}</div>
+      </div>
+
+    </div>
+
+  </div>
+</div>

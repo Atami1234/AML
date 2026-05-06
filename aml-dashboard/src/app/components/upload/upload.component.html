@@ -1,0 +1,72 @@
+<div class="page-container upload-page">
+  <header class="section-header">
+    <span class="eyebrow">Data Ingestion Engine</span>
+    <h1>Ingest Intelligence</h1>
+  </header>
+
+  <div class="glass-card upload-card stagger-1">
+    <div class="upload-zone" [class.uploading]="loading" [class.file-ready]="!!selectedFile">
+      <input type="file" (change)="onFileSelected($event)" accept=".csv" class="file-input" [disabled]="loading">
+      
+      <div class="upload-content">
+        <span class="upload-icon">{{ selectedFile ? '📄' : '📥' }}</span>
+        <h3 *ngIf="!selectedFile">Drop CSV forensic ledger or click to browse</h3>
+        <h3 *ngIf="selectedFile">{{ selectedFile.name }}</h3>
+        <p>Supports UTF-8 encoded CSV files up to 5MB</p>
+      </div>
+    </div>
+
+    <div class="upload-footer">
+      <button class="btn btn-outline" (click)="selectedFile = null" *ngIf="selectedFile" [disabled]="loading">
+        Cancel
+      </button>
+      <button class="btn btn-primary" (click)="uploadFile()" [disabled]="!selectedFile || loading">
+        {{ loading ? 'Processing...' : 'Begin Ingestion' }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert-banner error stagger-2" style="margin-top: 24px;">
+    {{ error }}
+  </div>
+
+  <!-- Results Section -->
+  <div class="results-section stagger-3" *ngIf="uploadResult" style="margin-top: 40px;">
+    <div class="results-summary">
+      <div class="summary-card success">
+        <div class="result-icon">✅</div>
+        <div class="result-data">
+          <div class="result-num mono">{{ uploadResult.importedCount }}</div>
+          <div class="result-label">Records Ingested</div>
+        </div>
+      </div>
+      <div class="summary-card warning" *ngIf="uploadResult.skippedCount > 0">
+        <div class="result-icon">⚠️</div>
+        <div class="result-data">
+          <div class="result-num mono">{{ uploadResult.skippedCount }}</div>
+          <div class="result-label">Rows Skipped</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card skipped-card" *ngIf="uploadResult.skippedRows && uploadResult.skippedRows.length > 0">
+      <h3>Skipped Row Analysis</h3>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Row Index</th>
+              <th>Anomaly Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of uploadResult.skippedRows">
+              <td class="row-index mono">Row #{{ row.rowNumber }}</td>
+              <td class="reason-text">{{ row.reason }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

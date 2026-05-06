@@ -1,0 +1,98 @@
+<div class="page-container alerts-page">
+  <header class="section-header">
+    <div class="header-main">
+      <span class="eyebrow">Operational Threat Detection</span>
+      <h1>Risk Alert Center</h1>
+    </div>
+    
+    <div class="header-stats" *ngIf="!loading && alerts.length > 0">
+      <div class="hstat">
+        <span class="hstat-val mono" style="color: var(--risk-high);">{{ countHigh }}</span>
+        <span class="hstat-lbl">High Risk</span>
+      </div>
+      <div class="hstat-divider"></div>
+      <div class="hstat">
+        <span class="hstat-val mono" style="color: var(--risk-medium);">{{ countMedium }}</span>
+        <span class="hstat-lbl">Medium Risk</span>
+      </div>
+      <div class="hstat-divider"></div>
+      <div class="hstat">
+        <span class="hstat-val mono" style="color: var(--risk-low);">{{ countLow }}</span>
+        <span class="hstat-lbl">Low Risk</span>
+      </div>
+    </div>
+  </header>
+
+  <div *ngIf="error" class="alert-banner error stagger-1">
+    <span class="icon">⚠️</span>
+    {{ error }}
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Synchronizing threat databases...</p>
+  </div>
+
+  <div *ngIf="!loading && alerts.length === 0" class="empty-state glass-card stagger-1">
+    <span class="icon">🛡️</span>
+    <h3>System Status: Protected</h3>
+    <p>No active anomalies detected across the monitored perimeter.</p>
+  </div>
+
+  <div *ngIf="!loading && alerts.length > 0" class="alerts-grid">
+    <div *ngFor="let alert of alerts; let i = index" 
+         class="alert-card glass-card"
+         [ngClass]="'stagger-' + ((i % 4) + 1)"
+         [routerLink]="['/alerts', alert.alertId]">
+      
+      <div class="card-status-line" [style.background]="getRiskColor(alert.riskLevel)"></div>
+      
+      <div class="alert-head">
+        <div class="account-info">
+          <span class="label">Account Identity</span>
+          <h3 class="mono">{{ alert.accountNumber }}</h3>
+        </div>
+        <div class="risk-indicator" [style.border-color]="getRiskColor(alert.riskLevel)">
+          <span class="score mono">{{ alert.riskScore }}</span>
+          <span class="lbl">Score</span>
+        </div>
+      </div>
+
+      <div class="alert-body">
+        <div class="meta-row">
+          <span class="badge" [ngClass]="'badge-' + alert.riskLevel.toLowerCase()">{{ alert.riskLevel }}</span>
+          <span class="status mono" [class.open]="alert.status === 'Open'">{{ alert.status }}</span>
+        </div>
+        
+        <div class="reasons" *ngIf="alert.reasons?.length">
+          <span class="rule-tag" *ngFor="let r of alert.reasons.slice(0, 2)">
+            {{ r.ruleName }}
+          </span>
+          <span class="rule-tag more" *ngIf="alert.reasons.length > 2">
+            +{{ alert.reasons.length - 2 }}
+          </span>
+        </div>
+      </div>
+
+      <div class="alert-foot">
+        <div class="date-time">
+          <span class="date">{{ alert.createdAt | date:'dd MMM' }}</span>
+          <span class="time mono">{{ alert.createdAt | date:'HH:mm' }}</span>
+        </div>
+        <button class="btn-investigate">
+          Explore Analysis
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pagination-footer stagger-4" *ngIf="totalPages > 1 && !loading">
+    <div class="page-info">
+      Viewing segment <strong>{{ page }}</strong> of <strong>{{ totalPages }}</strong>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline" (click)="prevPage()" [disabled]="page === 1">Previous</button>
+      <button class="btn btn-outline" (click)="nextPage()" [disabled]="page === totalPages">Next</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,124 @@
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    
+    .icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    
+    .trend {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      &.positive { background: #f0fdf4; color: #16a34a; }
+      &.negative { background: #fef2f2; color: #dc2626; }
+    }
+    
+    .badge {
+      font-size: 0.65rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      &.badge-high { background: #fef2f2; color: #dc2626; border: 1px solid rgba(220, 38, 38, 0.1); }
+      &.badge-medium { background: #fff7ed; color: #ea580c; border: 1px solid rgba(234, 88, 12, 0.1); }
+    }
+  }
+
+  .card-body {
+    .value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+    .label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+  }
+
+  .card-foot {
+    .progress-bar {
+      height: 6px;
+      background: var(--surface-muted);
+      border-radius: 10px;
+      overflow: hidden;
+      .fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 1s ease-out;
+      }
+    }
+  }
+}
+
+.action-deck {
+  h3 {
+    margin-bottom: 24px;
+    font-size: 1.1rem;
+    color: var(--text-main);
+  }
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.action-tile {
+  background: var(--surface-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: var(--surface);
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    
+    .tile-icon { transform: scale(1.2); }
+    .tile-label { color: var(--accent); }
+  }
+
+  .tile-icon {
+    font-size: 2rem;
+    transition: transform 0.2s ease;
+  }
+  
+  .tile-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    transition: color 0.2s ease;
+  }
+}
