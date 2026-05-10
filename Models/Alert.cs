@@ -17,7 +17,8 @@ namespace AmlDetectionApi.Models
         public int AccountId { get; set; }
         public Account? Account { get; set; }
 
-        public int RiskScore { get; set; }
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal RiskScore { get; set; }
         public string RiskLevel { get; set; } = "Medium";
         public string Status { get; set; } = "Pending";
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

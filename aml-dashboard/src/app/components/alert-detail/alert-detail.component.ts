@@ -24,6 +24,13 @@ export class AlertDetailComponent implements OnInit {
     private alertService: AlertService
   ) {}
 
+  /** Color based on numeric score thresholds (mirrors backend logic) */
+  getRiskScoreColor(score: number): string {
+    if (score >= 85.7) return '#dc2626'; // High
+    if (score >= 60)   return '#ea580c'; // Medium
+    return '#16a34a';                     // Low
+  }
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {

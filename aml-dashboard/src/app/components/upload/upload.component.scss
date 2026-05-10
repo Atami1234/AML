@@ -48,8 +48,8 @@
 // Results
 .results-section { animation: fadeSlideUp 0.35s ease-out; }
 
-.results-summary {
-  display: flex; gap: 16px; margin-bottom: 20px;
+  .results-summary {
+  display: flex; gap: 16px; margin-bottom: 16px;
 
   .summary-card {
     flex: 1;
@@ -60,10 +60,80 @@
 
     &.success { background: #f0fdf4; border-color: #bbf7d0; .result-icon, .result-num { color: #16a34a; } }
     &.warning { background: #fff7ed; border-color: #fed7aa; .result-icon, .result-num { color: #ea580c; } }
+    &.info    { background: #eff6ff; border-color: #bfdbfe; .result-icon, .result-num { color: #2563eb; } }
+    &.neutral { background: #f8fafc; border-color: #e2e8f0; .result-icon, .result-num { color: #475569; } }
 
     .result-icon { font-size: 2rem; }
     .result-num  { font-size: 2rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1; }
     .result-label{ font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; font-weight: 600; }
+  }
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 20px 28px;
+  margin-bottom: 16px;
+
+  .detail-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    .detail-icon { font-size: 1.6rem; }
+    .detail-val  { font-size: 1.35rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #0f172a; line-height: 1; }
+    .detail-label{ font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; margin-top: 4px; }
+  }
+
+  .detail-divider {
+    width: 1px;
+    height: 40px;
+    background: #e2e8f0;
+    margin: 0 24px;
+  }
+}
+
+.status-timeline {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 12px 24px;
+  background: var(--surface-muted);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+
+  .status-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: all 0.3s;
+
+    &.active { color: var(--primary); }
+    &.complete { color: var(--risk-low); }
+
+    .status-icon { font-size: 1rem; }
+    .status-badge {
+      background: var(--primary);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+  }
+
+  .status-divider {
+    flex: 1;
+    height: 2px;
+    background: var(--border-subtle);
+    &.active { background: var(--primary); }
   }
 }
 

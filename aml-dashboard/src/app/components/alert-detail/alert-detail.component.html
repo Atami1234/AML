@@ -25,7 +25,7 @@
       <div class="card summary-card" [ngClass]="'border-' + alert.riskLevel.toLowerCase()">
         <div class="summary-header">
           <h3>Risk Profile</h3>
-          <span class="score-chip" [ngClass]="alert.riskLevel.toLowerCase()">{{ alert.riskScore }}</span>
+          <span class="score-chip" [style.color]="getRiskScoreColor(alert.riskScore)">{{ alert.riskScore | number:'1.2-2' }}%</span>
         </div>
         <div class="summary-grid">
           <div class="s-item">
@@ -44,7 +44,7 @@
           </div>
           <div class="s-item">
             <label>Score</label>
-            <div class="s-val score-val" [ngClass]="alert.riskLevel.toLowerCase()">{{ alert.riskScore }} / 100</div>
+          <div class="s-val score-val" [style.color]="getRiskScoreColor(alert.riskScore)">{{ alert.riskScore | number:'1.2-2' }}%</div>
           </div>
         </div>
 

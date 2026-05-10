@@ -144,4 +144,4 @@ C:\Users\admin\Desktop\Projects\GDProject\bin\Debug\net8.0\aml-dashboard\package
 C:\Users\admin\Desktop\Projects\GDProject\bin\Debug\net8.0\aml-dashboard\tsconfig.app.json
 C:\Users\admin\Desktop\Projects\GDProject\bin\Debug\net8.0\aml-dashboard\tsconfig.json
 C:\Users\admin\Desktop\Projects\GDProject\bin\Debug\net8.0\aml-dashboard\tsconfig.spec.json
-C:\Users\admin\Desktop\Projects\GDProject\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+C:\Users\admin\Desktop\Projects\GDProject\obj\Debug\net8.0\AmlDetectionApi.sourcelink.json

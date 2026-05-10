@@ -8,7 +8,7 @@ namespace AmlDetectionApi.DTOs
         public int AlertId { get; set; }
         public int AccountId { get; set; }
         public string AccountNumber { get; set; } = string.Empty;
-        public int RiskScore { get; set; }
+        public decimal RiskScore { get; set; }
         public string RiskLevel { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }

@@ -2,7 +2,9 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AccountService } from '../../services/account.service';
 import { TransactionService } from '../../services/transaction.service';
-import { AccountMetrics, Transaction } from '../../models/models';
+import { AlertService } from '../../services/alert.service';
+import { AccountMetrics, Transaction, Alert } from '../../models/models';
+import { forkJoin } from 'rxjs';
 import { Network, DataSet, Data, Node, Edge, Options } from 'vis-network/standalone';
 
 @Component({
@@ -32,10 +34,12 @@ export class NetworkComponent implements OnInit, OnDestroy {
 
   private network: Network | null = null;
   private allTransactions: Transaction[] = [];
+  private allAlerts: Alert[] = [];
 
   constructor(
     private accountService: AccountService,
-    private transactionService: TransactionService
+    private transactionService: TransactionService,
+    private alertService: AlertService
   ) {}
 
   ngOnInit(): void {
@@ -52,26 +56,31 @@ export class NetworkComponent implements OnInit, OnDestroy {
     this.error = '';
     this.selectedNode = null;
 
-    // Fetch all transactions in one request (large pageSize)
-    this.transactionService.getTransactions(1, 1000).subscribe({
+    // Fetch both transactions and alerts
+    forkJoin({
+      transactions: this.transactionService.getTransactions(1, 1000),
+      alerts: this.alertService.getAlerts(1, 1000)
+    }).subscribe({
       next: (res) => {
-        this.allTransactions = res.items;
-        if (res.items.length === 0) {
+        this.allTransactions = res.transactions.items;
+        this.allAlerts = res.alerts.items;
+        
+        if (this.allTransactions.length === 0) {
           this.error = 'No transactions found in the database.';
           this.loading = false;
           return;
         }
-        this.buildAndRender(res.items);
+        this.buildAndRender(this.allTransactions, this.allAlerts);
       },
       error: () => {
-        this.error = 'Failed to load transactions.';
+        this.error = 'Failed to load network data.';
         this.loading = false;
       }
     });
   }
 
-  // ── Build graph from transaction list ─────────────────
-  private buildAndRender(transactions: Transaction[]): void {
+  // ── Build graph from data ─────────────────
+  private buildAndRender(transactions: Transaction[], alerts: Alert[]): void {
     // Compute per-account degree (number of edges)
     const degreeMap = new Map<number, number>();
     const outVolume = new Map<number, number>();
@@ -90,23 +99,37 @@ export class NetworkComponent implements OnInit, OnDestroy {
     const accountIds = new Set<number>();
     transactions.forEach(tx => { accountIds.add(tx.fromAccountId); accountIds.add(tx.toAccountId); });
 
-    // Build vis nodes — size and color driven by degree (centrality)
+    // Build vis nodes — driven by risk alerts
     const visNodes: any[] = Array.from(accountIds).map(id => {
-      const degree    = degreeMap.get(id) || 1;
-      const ratio     = degree / this.maxDegree;          // 0 → 1
-      const nodeSize  = 10 + ratio * 38;                  // 10–48 px
-      const vol       = outVolume.get(id) || 0;
+      const degree = degreeMap.get(id) || 1;
+      const vol = outVolume.get(id) || 0;
+      
+      // Find matching alert
+      const alert = alerts.find(a => a.accountId === id);
+      const riskLevel = alert ? alert.riskLevel : 'None';
 
-      // Risk classification by degree ratio
-      let bg: string, border: string, glow: string, tier: string;
-      if (ratio >= 0.7) {
-        bg = '#dc2626'; border = '#fca5a5'; glow = 'rgba(220,38,38,0.8)'; tier = 'High Hub';
-      } else if (ratio >= 0.35) {
-        bg = '#ea580c'; border = '#fdba74'; glow = 'rgba(234,88,12,0.65)'; tier = 'Medium';
-      } else if (ratio >= 0.15) {
-        bg = '#2563ab'; border = '#93c5fd'; glow = 'rgba(37,99,171,0.55)'; tier = 'Active';
-      } else {
-        bg = '#475569'; border = '#94a3b8'; glow = 'rgba(71,85,105,0.4)'; tier = 'Peripheral';
+      let bg: string, border: string, glow: string, nodeSize: number;
+      
+      switch (riskLevel) {
+        case 'High':
+          bg = '#ef4444'; border = '#fca5a5'; glow = 'rgba(239, 68, 68, 0.8)';
+          nodeSize = 40;
+          break;
+        case 'Medium':
+          bg = '#f97316'; border = '#fdba74'; glow = 'rgba(249, 115, 22, 0.65)';
+          nodeSize = 32;
+          break;
+        case 'Low': // Though logic says < 60 no alert, if somehow one exists
+          bg = '#16a34a'; border = '#86efac'; glow = 'rgba(22, 163, 74, 0.55)';
+          nodeSize = 24;
+          break;
+        case 'None':
+          bg = '#3b82f6'; border = '#93c5fd'; glow = 'rgba(59, 130, 246, 0.4)';
+          nodeSize = 24;
+          break;
+        default:
+          bg = '#94a3b8'; border = '#cbd5e1'; glow = 'rgba(148, 163, 184, 0.3)';
+          nodeSize = 24;
       }
 
       return {
@@ -115,7 +138,7 @@ export class NetworkComponent implements OnInit, OnDestroy {
         title: [
           `Account #${id}`,
           `Degree: ${degree} connections`,
-          `Tier: ${tier}`,
+          `Risk Level: ${riskLevel}`,
           vol > 0 ? `Volume: SAR ${vol.toLocaleString()}` : ''
         ].filter(Boolean).join('\n'),
         color: {
@@ -125,62 +148,51 @@ export class NetworkComponent implements OnInit, OnDestroy {
           hover:      { background: bg, border: '#ffd700' }
         },
         size: nodeSize,
-        borderWidth: ratio >= 0.7 ? 3 : 2,
+        borderWidth: riskLevel === 'High' ? 3 : 2,
         borderWidthSelected: 6,
         shadow: {
           enabled: true,
           color: glow,
-          size: ratio >= 0.7 ? 28 : (ratio >= 0.35 ? 18 : 10),
+          size: riskLevel === 'High' ? 28 : (riskLevel === 'Medium' ? 18 : 10),
           x: 0, y: 0
         },
         font: {
           color: '#ffffff',
-          size: ratio >= 0.5 ? 13 : 10,
+          size: nodeSize > 30 ? 13 : 10,
           face: 'Inter',
           strokeWidth: 3,
           strokeColor: 'rgba(5,13,20,0.98)'
         },
         // store for click handler
         _degree: degree,
-        _tier: tier,
+        _risk: riskLevel,
         _volume: vol
       };
     });
 
-    // Build vis edges — thickness by amount
-    const amounts   = transactions.map(t => t.amount);
-    const maxAmount = Math.max(...amounts);
+    // Build vis edges — thickness and color by amount
+    const visEdges: any[] = transactions.map((tx, i) => ({
+      id: i + 1,
+      from: tx.fromAccountId,
+      to: tx.toAccountId,
+      label: `SAR ${tx.amount?.toLocaleString()}`,
+      color: {
+        color: tx.amount > 50000 ? '#f97316' : '#3b82f6',
+        highlight: '#f59e0b'
+      },
+      width: tx.amount > 50000 ? 3 : 1.5,
+      arrows: { to: { enabled: true, scaleFactor: 0.6, type: 'arrow' } },
+      smooth: { enabled: true, type: 'curvedCW', roundness: 0.2 },
+      font: {
+        color: tx.amount > 50000 ? '#ea580c' : '#64748b',
+        size: 10,
+        background: 'rgba(5,13,20,0.85)',
+        strokeWidth: 0,
+        align: 'middle'
+      }
+    }));
 
-    const visEdges: any[] = transactions.map((tx, i) => {
-      const ratio  = tx.amount / maxAmount;
-      const width  = 0.8 + ratio * 3.5;     // 0.8–4.3 px
-      const alpha  = 0.25 + ratio * 0.5;    // 0.25–0.75
-
-      // High-value = orange glow, normal = blue
-      const color = ratio >= 0.6
-        ? `rgba(234,88,12,${alpha})`
-        : `rgba(59,130,246,${alpha})`;
-
-      return {
-        id: i + 1,
-        from: tx.fromAccountId,
-        to:   tx.toAccountId,
-        label: ratio >= 0.4 ? tx.amount.toLocaleString() : '',   // only label big edges
-        color: { color, highlight: '#ffd700', hover: '#ffd700' },
-        width,
-        selectionWidth: 5,
-        hoverWidth: width + 1.5,
-        arrows: { to: { enabled: true, scaleFactor: 0.6, type: 'arrow' } },
-        smooth: { enabled: true, type: 'continuous', roundness: 0.3 },
-        font: {
-          color: ratio >= 0.6 ? '#ea580c' : '#64748b',
-          size: 10,
-          background: 'rgba(5,13,20,0.85)',
-          strokeWidth: 0,
-          align: 'middle'
-        }
-      };
-    });
+    console.log('edges:', visEdges);
 
     this.nodesCount = visNodes.length;
     this.edgesCount = visEdges.length;
@@ -336,11 +348,11 @@ export class NetworkComponent implements OnInit, OnDestroy {
 
   get tierBadgeClass(): string {
     if (!this.selectedNode) return '';
-    switch (this.selectedNode._tier) {
-      case 'High Hub': return 'badge-high';
-      case 'Medium':   return 'badge-medium';
-      case 'Active':   return 'badge-blue';
-      default:         return 'badge-muted';
+    switch (this.selectedNode._risk) {
+      case 'High':   return 'badge-high';
+      case 'Medium': return 'badge-medium';
+      case 'Low':    return 'badge-low';
+      default:       return 'badge-blue';
     }
   }
 

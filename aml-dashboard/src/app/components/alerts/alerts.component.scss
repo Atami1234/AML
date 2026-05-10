@@ -64,8 +64,14 @@
     justify-content: center;
     line-height: 1;
 
-    .score { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
-    .lbl { font-size: 0.55rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .score {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: inherit;           // inherits the dynamic [style.color]
+        line-height: 1;
+        .pct { font-size: 0.6rem; font-weight: 700; vertical-align: super; }
+      }
+      .lbl { font-size: 0.5rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
   }
 }
 

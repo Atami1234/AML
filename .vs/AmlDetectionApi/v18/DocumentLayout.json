@@ -30,8 +30,7 @@
               "RelativeToolTip": "aml-dashboard\\src\\app\\services\\api.service.ts",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
-              "WhenOpened": "2026-05-06T11:46:21.246Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-06T11:46:21.246Z"
             },
             {
               "$type": "Document",
@@ -41,10 +40,14 @@
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\admin\\Desktop\\Projects\\GDProject\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAACoAAAAAAAAAAAAqwDkAAAAcAAAAAAAAAA==",
+              "ViewState": "AgIAADYAAAAAAAAAAAAqwE0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-06T11:38:27.391Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
             }
           ]
         }

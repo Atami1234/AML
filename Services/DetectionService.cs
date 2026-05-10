@@ -41,71 +41,86 @@ namespace AmlDetectionApi.Services
                 
             var accountViolations = new Dictionary<int, List<AlertReason>>();
 
-            void AddViolation(int accountId, string ruleName, string desc, int score)
+            void AddViolation(int accountId, string ruleName, string desc, decimal score)
             {
                 if (!accountViolations.ContainsKey(accountId))
-                {
                     accountViolations[accountId] = new List<AlertReason>();
-                }
-                
+
                 if (!accountViolations[accountId].Any(r => r.RuleName == ruleName))
-                {
-                    accountViolations[accountId].Add(new AlertReason { RuleName = ruleName, Description = desc, Score = score });
-                }
+                    accountViolations[accountId].Add(new AlertReason { RuleName = ruleName, Description = desc, Score = (int)score });
             }
 
-            // Rule 1: High Amount Transaction
-            var highAmountThreshold = 10000m;
+            // Rule 1: High Amount Transaction — tiered by amount
+            //   > 500,000 → 45 pts  |  > 100,000 → 30 pts  |  > 50,000 → 20 pts
             foreach (var tx in transactions)
             {
-                if (tx.Amount > highAmountThreshold)
+                decimal pts = tx.Amount switch
                 {
-                    AddViolation(tx.FromAccountId, "High Amount", $"Transaction of {tx.Amount} exceeds threshold {highAmountThreshold}", 50);
-                }
+                    > 500_000m => 45.0m,
+                    > 100_000m => 30.0m,
+                    > 50_000m  => 20.0m,
+                    _          => 0.0m
+                };
+                if (pts > 0)
+                    AddViolation(tx.FromAccountId, "High Amount",
+                        $"Transaction of {tx.Amount:N2} exceeds high-value threshold", pts);
             }
 
-            // Rule 2: Multiple Transactions in Short Time
+            // Rule 2: Rapid Transactions — 5+ transactions within a SINGLE hour (25 pts)
             var groupsFrom = transactions.GroupBy(t => t.FromAccountId);
             foreach (var group in groupsFrom)
             {
                 var sorted = group.OrderBy(t => t.TransactionDate).ToList();
                 for (int i = 0; i < sorted.Count - 4; i++)
                 {
-                    if ((sorted[i + 4].TransactionDate - sorted[i].TransactionDate).TotalHours <= 24)
+                    if ((sorted[i + 4].TransactionDate - sorted[i].TransactionDate).TotalHours <= 1)
                     {
-                        AddViolation(group.Key, "Rapid Transactions", "More than 5 transactions in 24 hours", 40);
+                        AddViolation(group.Key, "Rapid Transactions",
+                            "5 or more transactions sent within a single hour", 25.0m);
                         break;
                     }
                 }
             }
 
-            // Rule 3: Many-to-One Pattern
+            // Rule 3: Funnel Account — 4+ unique senders (30 pts)
             var groupsTo = transactions.GroupBy(t => t.ToAccountId);
             foreach (var group in groupsTo)
             {
                 var uniqueSenders = group.Select(t => t.FromAccountId).Distinct().Count();
-                if (uniqueSenders >= 3)
-                {
-                    AddViolation(group.Key, "Many-to-One", $"Received transactions from {uniqueSenders} different accounts", 60);
-                }
+                if (uniqueSenders >= 4)
+                    AddViolation(group.Key, "Funnel Account",
+                        $"Received funds from {uniqueSenders} different accounts", 30.0m);
             }
 
-            // Rule 4 & 5: Graph Patterns (Chains and Cycles)
+            // Rule 4: Circular Pattern (40 pts)
             var cycles = _graphService.FindCycles(transactions);
             foreach (var cycle in cycles)
-            {
                 foreach (var accountId in cycle)
-                {
-                    AddViolation(accountId, "Circular Pattern", $"Account involved in a circular transaction path", 80);
-                }
-            }
+                    AddViolation(accountId, "Circular Pattern",
+                        "Account participates in a circular transaction loop", 40.0m);
 
+            // Rule 5: Chain Pattern (35 pts)
             var chains = _graphService.FindChains(transactions);
             foreach (var chain in chains)
-            {
                 foreach (var accountId in chain)
+                    AddViolation(accountId, "Chain Pattern",
+                        "Account is a relay node in a layering chain", 35.0m);
+
+            // Rule 6: Fast Money Movement — received then forwarded within 24 h (25 pts)
+            var allAccountIds = transactions.Select(t => t.FromAccountId)
+                .Concat(transactions.Select(t => t.ToAccountId)).Distinct();
+            foreach (var accId in allAccountIds)
+            {
+                var sent     = transactions.Where(t => t.FromAccountId == accId).OrderBy(t => t.TransactionDate).ToList();
+                var received = transactions.Where(t => t.ToAccountId   == accId).OrderBy(t => t.TransactionDate).ToList();
+                if (sent.Count > 0 && received.Count > 0)
                 {
-                    AddViolation(accountId, "Chain Pattern", $"Account involved in a chain transaction path", 70);
+                    bool fastMove = received.Any(r =>
+                        sent.Any(s => s.TransactionDate > r.TransactionDate &&
+                                      (s.TransactionDate - r.TransactionDate).TotalHours <= 24));
+                    if (fastMove)
+                        AddViolation(accId, "Fast Money Movement",
+                            "Received funds were forwarded to another account within 24 hours", 25.0m);
                 }
             }
 
@@ -131,13 +146,9 @@ namespace AmlDetectionApi.Services
                 }
 
                 if (mlFailed)
-                {
-                    AddViolation(group.Key, "ML Unavailable", "ML model unavailable, rule-based detection only", 0);
-                }
+                    AddViolation(group.Key, "ML Unavailable", "ML model unavailable, rule-based detection only", 0.0m);
                 else if (mlTriggered)
-                {
-                    AddViolation(group.Key, "ML Model", "Machine learning model flagged this transaction as suspicious", 20);
-                }
+                    AddViolation(group.Key, "ML Model", "Machine learning model flagged this transaction as suspicious", 20.0m);
             }
 
             var alertsCreated = new List<Alert>();
@@ -147,26 +158,31 @@ namespace AmlDetectionApi.Services
                 var accountId = kvp.Key;
                 var reasons = kvp.Value;
 
-                int finalScore = reasons.Sum(r => r.Score);
-                if (finalScore > 100) finalScore = 100;
+                // Check if alert already exists for this account to prevent duplicates
+                bool alertExists = await _context.Alerts.AnyAsync(a => a.AccountId == accountId);
+                if (alertExists) continue;
 
-                if (finalScore >= 50)
+                // Decimal scoring: sum individual rule contributions, cap at 100
+                decimal finalScore = reasons.Sum(r => (decimal)r.Score);
+                if (finalScore > 100m) finalScore = 100m;
+
+                // Only generate alert if score >= 60
+                if (finalScore < 60.0m) continue;
+
+                string riskLevel = finalScore >= 85.7m ? "High" : "Medium";
+
+                var alert = new Alert
                 {
-                    string riskLevel = finalScore >= 75 ? "High" : "Medium";
+                    AccountId = accountId,
+                    RiskScore = Math.Round(finalScore, 2),
+                    RiskLevel = riskLevel,
+                    Status = "Pending",
+                    CreatedAt = DateTime.UtcNow,
+                    AlertReasons = reasons
+                };
 
-                    var alert = new Alert
-                    {
-                        AccountId = accountId,
-                        RiskScore = finalScore,
-                        RiskLevel = riskLevel,
-                        Status = "Pending",
-                        CreatedAt = DateTime.UtcNow,
-                        AlertReasons = reasons
-                    };
-
-                    _context.Alerts.Add(alert);
-                    alertsCreated.Add(alert);
-                }
+                _context.Alerts.Add(alert);
+                alertsCreated.Add(alert);
             }
 
             if (alertsCreated.Any())

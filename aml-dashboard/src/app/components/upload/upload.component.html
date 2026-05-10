@@ -5,24 +5,46 @@
   </header>
 
   <div class="glass-card upload-card stagger-1">
-    <div class="upload-zone" [class.uploading]="loading" [class.file-ready]="!!selectedFile">
-      <input type="file" (change)="onFileSelected($event)" accept=".csv" class="file-input" [disabled]="loading">
+    <div class="upload-zone" [class.uploading]="loading || detecting" [class.file-ready]="!!selectedFile">
+      <input type="file" (change)="onFileSelected($event)" accept=".csv" class="file-input" [disabled]="loading || detecting">
       
       <div class="upload-content">
-        <span class="upload-icon">{{ selectedFile ? '📄' : '📥' }}</span>
-        <h3 *ngIf="!selectedFile">Drop CSV forensic ledger or click to browse</h3>
-        <h3 *ngIf="selectedFile">{{ selectedFile.name }}</h3>
-        <p>Supports UTF-8 encoded CSV files up to 5MB</p>
+        <span class="upload-icon">{{ (loading || detecting) ? '⏳' : (selectedFile ? '📄' : '📥') }}</span>
+        <h3 *ngIf="!selectedFile && !loading && !detecting">Drop CSV forensic ledger or click to browse</h3>
+        <h3 *ngIf="selectedFile && !loading && !detecting">{{ selectedFile.name }}</h3>
+        <h3 *ngIf="loading">Uploading and Validating Ledger...</h3>
+        <h3 *ngIf="detecting">Running AML Risk Detection Algorithms...</h3>
+        <p *ngIf="!loading && !detecting">Supports Format 1 (FromAccountNumber) &amp; Format 2 (Timestamp) · Max 50 MB</p>
+        <p *ngIf="loading">Transferring blocks to secure node...</p>
+        <p *ngIf="detecting">Analyzing network patterns and graph circularity...</p>
       </div>
     </div>
 
     <div class="upload-footer">
-      <button class="btn btn-outline" (click)="selectedFile = null" *ngIf="selectedFile" [disabled]="loading">
+      <button class="btn btn-outline" (click)="selectedFile = null" *ngIf="selectedFile" [disabled]="loading || detecting">
         Cancel
       </button>
-      <button class="btn btn-primary" (click)="uploadFile()" [disabled]="!selectedFile || loading">
-        {{ loading ? 'Processing...' : 'Begin Ingestion' }}
+      <button class="btn btn-primary" (click)="uploadFile()" [disabled]="!selectedFile || loading || detecting">
+        {{ (loading || detecting) ? 'Processing...' : 'Begin Ingestion' }}
       </button>
+    </div>
+  </div>
+
+  <!-- ── Status Timeline ── -->
+  <div class="status-timeline stagger-2" *ngIf="uploadResult">
+    <div class="status-step complete">
+      <span class="status-icon">✅</span>
+      <span class="status-text">Upload complete</span>
+    </div>
+    <div class="status-divider" [class.active]="detecting || detectionResult"></div>
+    <div class="status-step" [class.active]="detecting" [class.complete]="detectionResult">
+      <span class="status-icon">{{ detectionResult ? '✅' : (detecting ? '⏳' : '⚪') }}</span>
+      <span class="status-text">
+        {{ detectionResult ? 'Detection complete' : (detecting ? 'Running detection...' : 'Risk analysis queued') }}
+      </span>
+      <span class="status-badge" *ngIf="detectionResult">
+        {{ detectionResult.totalAlertsCreated }} alerts generated
+      </span>
     </div>
   </div>
 
@@ -30,25 +52,66 @@
     {{ error }}
   </div>
 
-  <!-- Results Section -->
-  <div class="results-section stagger-3" *ngIf="uploadResult" style="margin-top: 40px;">
+  <!-- ── Upload Summary Card ── -->
+  <div class="results-section stagger-3" *ngIf="uploadResult" style="margin-top: 24px;">
+
+    <!-- Primary stat strip -->
     <div class="results-summary">
+
       <div class="summary-card success">
         <div class="result-icon">✅</div>
         <div class="result-data">
-          <div class="result-num mono">{{ uploadResult.importedCount }}</div>
-          <div class="result-label">Records Ingested</div>
+          <div class="result-num mono">{{ uploadResult.importedCount | number }}</div>
+          <div class="result-label">Records Imported</div>
         </div>
       </div>
-      <div class="summary-card warning" *ngIf="uploadResult.skippedCount > 0">
-        <div class="result-icon">⚠️</div>
+
+      <div class="summary-card info">
+        <div class="result-icon">📋</div>
         <div class="result-data">
-          <div class="result-num mono">{{ uploadResult.skippedCount }}</div>
+          <div class="result-num mono">{{ uploadResult.totalRowsInFile | number }}</div>
+          <div class="result-label">Total Rows in File</div>
+        </div>
+      </div>
+
+      <div class="summary-card {{ uploadResult.skippedCount > 0 ? 'warning' : 'neutral' }}">
+        <div class="result-icon">{{ uploadResult.skippedCount > 0 ? '⚠️' : '✔️' }}</div>
+        <div class="result-data">
+          <div class="result-num mono">{{ uploadResult.skippedCount | number }}</div>
           <div class="result-label">Rows Skipped</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Secondary detail row -->
+    <div class="detail-row glass-card">
+      <div class="detail-item">
+        <span class="detail-icon">🏦</span>
+        <div>
+          <div class="detail-val mono">{{ uploadResult.newAccountsCreated | number }}</div>
+          <div class="detail-label">New Accounts Created</div>
+        </div>
+      </div>
+      <div class="detail-divider"></div>
+      <div class="detail-item">
+        <span class="detail-icon">👤</span>
+        <div>
+          <div class="detail-val mono">{{ uploadResult.newCustomersCreated | number }}</div>
+          <div class="detail-label">New Customers Created</div>
+        </div>
+      </div>
+      <div class="detail-divider"></div>
+      <div class="detail-item">
+        <span class="detail-icon">⏱️</span>
+        <div>
+          <div class="detail-val mono">{{ uploadResult.timeTakenMs | number:'1.0-0' }} ms</div>
+          <div class="detail-label">Time Taken</div>
         </div>
       </div>
     </div>
 
+    <!-- Skipped rows table -->
     <div class="glass-card skipped-card" *ngIf="uploadResult.skippedRows && uploadResult.skippedRows.length > 0">
       <h3>Skipped Row Analysis</h3>
       <div class="table-wrapper">
@@ -68,5 +131,6 @@
         </table>
       </div>
     </div>
+
   </div>
 </div>
